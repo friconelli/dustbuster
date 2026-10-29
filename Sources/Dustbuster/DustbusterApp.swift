@@ -6,6 +6,7 @@ struct DustbusterApp: App {
         WindowGroup("Dustbuster") {
             ContentView()
         }
-        .windowResizability(.contentSize)
+        .defaultSize(width: 1080, height: 720)
+        .windowToolbarStyle(.unified)
     }
 }

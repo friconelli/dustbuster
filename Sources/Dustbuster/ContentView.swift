@@ -18,27 +18,35 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
-                Label("Panoramica", systemImage: "square.grid.2x2")
+                sidebarRow("Panoramica", symbol: "gauge.with.dots.needle.67percent", tint: Theme.teal)
                     .tag(SidebarSelection.overview)
 
                 Section("Cache e temporanei") {
                     ForEach(store.categories) { category in
-                        Label(category.title, systemImage: icon(for: category.safety))
-                            .tag(SidebarSelection.category(category.id))
+                        sidebarRow(category.title, symbol: category.symbol, tint: category.tint) {
+                            if store.scanningCategoryIDs.contains(category.id) {
+                                ProgressView().controlSize(.mini)
+                            } else {
+                                Text(formatBytes(store.sizeFor(category)))
+                                    .font(.caption.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .tag(SidebarSelection.category(category.id))
                     }
                 }
 
-                Section("Altro") {
-                    Label("File duplicati", systemImage: "doc.on.doc")
+                Section("Strumenti") {
+                    sidebarRow("File duplicati", symbol: "doc.on.doc", tint: .teal)
                         .tag(SidebarSelection.duplicates)
-                    Label("Docker", systemImage: "shippingbox")
+                    sidebarRow("Docker", symbol: "cube.box", tint: .blue)
                         .tag(SidebarSelection.docker)
                 }
             }
-            .navigationSplitViewColumnWidth(min: 220, ideal: 260)
+            .navigationSplitViewColumnWidth(min: 240, ideal: 280)
         } detail: {
             detailView
-                .frame(minWidth: 520, minHeight: 420)
+                .frame(minWidth: 560, minHeight: 480)
         }
         .onAppear {
             store.scanAll()
@@ -46,11 +54,31 @@ struct ContentView: View {
         }
     }
 
+    private func sidebarRow(_ title: String, symbol: String, tint: Color) -> some View {
+        sidebarRow(title, symbol: symbol, tint: tint) { EmptyView() }
+    }
+
+    private func sidebarRow<Trailing: View>(
+        _ title: String,
+        symbol: String,
+        tint: Color,
+        @ViewBuilder trailing: () -> Trailing
+    ) -> some View {
+        HStack(spacing: 10) {
+            IconTile(symbol: symbol, tint: tint, size: 22)
+            Text(title)
+                .lineLimit(1)
+            Spacer(minLength: 4)
+            trailing()
+        }
+        .padding(.vertical, 2)
+    }
+
     @ViewBuilder
     private var detailView: some View {
         switch selection {
         case .none, .overview:
-            OverviewView(store: store)
+            OverviewView(store: store, selection: $selection)
         case .category(let id):
             if let category = store.categories.first(where: { $0.id == id }) {
                 CategoryDetailView(store: store, category: category)
@@ -59,14 +87,6 @@ struct ContentView: View {
             DuplicatesView(store: store)
         case .docker:
             DockerView(store: store)
-        }
-    }
-
-    private func icon(for safety: SafetyLevel) -> String {
-        switch safety {
-        case .safe: return "checkmark.circle"
-        case .caution: return "exclamationmark.triangle"
-        case .info: return "info.circle"
         }
     }
 }
