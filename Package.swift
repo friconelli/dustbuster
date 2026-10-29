@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "MacCleaner",
+    name: "Dustbuster",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "MacCleaner",
-            path: "Sources/MacCleaner"
+            name: "Dustbuster",
+            path: "Sources/Dustbuster"
         )
     ]
 )

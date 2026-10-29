@@ -1,4 +1,4 @@
-# MacCleaner
+# Dustbuster
 
 App macOS (SwiftUI) per liberare spazio su disco: analizza cache e file temporanei, segnala cosa è sicuro eliminare e cosa richiede attenzione, trova file duplicati e mostra lo spazio occupato da Docker.
 
@@ -35,7 +35,7 @@ App macOS (SwiftUI) per liberare spazio su disco: analizza cache e file temporan
 ./Scripts/build_app.sh --install
 ```
 
-Compila in release, assembla `MacCleaner.app`, lo firma ad-hoc e lo installa in `/Applications`.
+Compila in release, assembla `Dustbuster.app`, lo firma ad-hoc e lo installa in `/Applications`.
 
 ## Rigenerare l'icona
 
@@ -46,6 +46,6 @@ iconutil -c icns AppIcon.iconset -o Resources/AppIcon.icns
 
 ## Struttura
 
-- `Sources/MacCleaner/` — codice SwiftUI, scanner, duplicate finder
+- `Sources/Dustbuster/` — codice SwiftUI, scanner, duplicate finder
 - `Resources/` — `Info.plist` e icona del bundle
 - `Scripts/` — build dell'app e generazione icona

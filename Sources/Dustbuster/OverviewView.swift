@@ -18,7 +18,7 @@ struct OverviewView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
-                    Text("MacCleaner")
+                    Text("Dustbuster")
                         .font(.largeTitle.bold())
                     Spacer()
                     Button {

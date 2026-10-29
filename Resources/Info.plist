@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>MacCleaner</string>
+    <string>Dustbuster</string>
     <key>CFBundleDisplayName</key>
-    <string>MacCleaner</string>
+    <string>Dustbuster</string>
     <key>CFBundleIdentifier</key>
-    <string>com.federicomancinelli.maccleaner</string>
+    <string>com.federicomancinelli.dustbuster</string>
     <key>CFBundleExecutable</key>
-    <string>MacCleaner</string>
+    <string>Dustbuster</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleVersion</key>

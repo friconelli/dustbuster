@@ -1,9 +1,9 @@
 import SwiftUI
 
 @main
-struct MacCleanerApp: App {
+struct DustbusterApp: App {
     var body: some Scene {
-        WindowGroup("MacCleaner") {
+        WindowGroup("Dustbuster") {
             ContentView()
         }
         .windowResizability(.contentSize)

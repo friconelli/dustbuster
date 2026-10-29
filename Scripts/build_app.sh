@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_NAME="MacCleaner"
+APP_NAME="Dustbuster"
 APP_DIR="$ROOT_DIR/.build/$APP_NAME.app"
 
 echo "==> Building release binary"

@@ -9,7 +9,7 @@ struct DockerView: View {
             Text("Docker")
                 .font(.title2.bold())
 
-            Text("Immagini, container e volumi Docker possono contenere dati di applicazioni o database che questa app non può valutare in sicurezza. Per questo motivo MacCleaner non elimina nulla qui automaticamente: ti mostra lo spazio occupato e ti lascia decidere da terminale.")
+            Text("Immagini, container e volumi Docker possono contenere dati di applicazioni o database che questa app non può valutare in sicurezza. Per questo motivo Dustbuster non elimina nulla qui automaticamente: ti mostra lo spazio occupato e ti lascia decidere da terminale.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
 
