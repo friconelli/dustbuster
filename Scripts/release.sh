@@ -1,6 +1,6 @@
 #!/bin/bash
 # Publishes a release: sets the version, builds, zips the app and creates the GitHub release
-# that the in-app updater reads (asset name must stay Dustbuster.zip).
+# that the in-app updaters read: Dustbuster.zip (macOS) and dustbuster_<version>_all.deb (Linux).
 # Usage: Scripts/release.sh 1.2.0 "Release notes"
 set -euo pipefail
 
@@ -21,10 +21,17 @@ Scripts/build_app.sh
 rm -f .build/Dustbuster.zip
 ditto -c -k --keepParent .build/Dustbuster.app .build/Dustbuster.zip
 
+ASSETS=(.build/Dustbuster.zip)
+if linux/build_deb.sh "$VERSION"; then
+    ASSETS+=(".build/dustbuster_${VERSION}_all.deb")
+else
+    echo "WARNING: Linux package not built (needs dpkg-deb or Docker); releasing macOS only" >&2
+fi
+
 git add Resources/Info.plist
 git commit -m "Release $VERSION" || true
 git tag "v$VERSION"
 git push
 git push origin "v$VERSION"
-gh release create "v$VERSION" .build/Dustbuster.zip --title "Dustbuster $VERSION" --notes "$NOTES"
+gh release create "v$VERSION" "${ASSETS[@]}" --title "Dustbuster $VERSION" --notes "$NOTES"
 echo "==> Released v$VERSION"

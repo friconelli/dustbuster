@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Dustbuster
+GenericName=Pulizia del disco
+Comment=Libera spazio: cache, file temporanei dell'AI, duplicati e file grandi
+Exec=dustbuster
+Icon=dustbuster
+Terminal=false
+Categories=System;Utility;
+Keywords=pulizia;cache;disco;spazio;cleaner;duplicati;
+StartupWMClass=dustbuster

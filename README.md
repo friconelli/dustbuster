@@ -44,6 +44,18 @@ App macOS (SwiftUI) per liberare spazio su disco: analizza cache e file temporan
 
 Le funzioni sono scritte da zero sulla base del comportamento documentato di strumenti simili; nessun codice di app commerciali è stato analizzato o copiato.
 
+## Linux (Zorin OS, Ubuntu, Debian)
+
+C'è una versione per Linux in `linux/` (Python + GTK 3, nessuna dipendenza da installare a mano). Ha le stesse regole di sicurezza della versione Mac: i repository git non si toccano mai e tutto va nel Cestino. Sezioni: cache e miniature, pip/npm/yarn/pnpm/cargo, **file creati dall'AI** (Claude Code, Codex, cartelle `_sostituiti`/`_backup`, `.orig_backup*`), cronologia e cookie dei browser (Firefox, Chrome, Chromium, Brave, Edge), mappa dello spazio, file grandi e vecchi, duplicati, elementi di avvio (si disattivano con un interruttore, senza eliminare nulla), pulizia intelligente. Non c'è il disinstallatore di app: su Linux è compito di `apt`, Snap e Flatpak.
+
+Installazione (scarica `dustbuster_<versione>_all.deb` dall'ultima release):
+
+```bash
+sudo apt install ./dustbuster_1.1.0_all.deb
+```
+
+Provato su Ubuntu 22.04 (base di Zorin 17) e 24.04 (Zorin 18). Gli aggiornamenti funzionano come su Mac: l'app controlla le release e, con **Aggiorna e riavvia**, scarica il nuovo `.deb` e lo installa (il sistema chiede la password). Per costruire il pacchetto: `linux/build_deb.sh` (serve Docker o `dpkg-deb`). Per provare l'app su dati finti: `python3 linux/tests/make_fixture.py /tmp/casa` e poi `HOME=/tmp/casa python3 -m dustbuster` da `linux/`. Test: `cd linux && python3 -m unittest discover -s tests`.
+
 ## Aggiornamenti
 
 L'app controlla da sola le nuove versioni su GitHub (all'avvio, al massimo ogni 6 ore) e dal menu **Dustbuster › Controlla aggiornamenti…**. Quando ne trova una compare in fondo alla barra laterale il pulsante **Aggiorna e riavvia**: scarica `Dustbuster.zip` dalla release, verifica che sia la stessa app (stesso bundle id e versione attesa), sostituisce la copia in uso, porta la vecchia nel Cestino e si riapre.
