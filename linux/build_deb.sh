@@ -54,6 +54,8 @@ CONTROL
 cat > "$STAGE/DEBIAN/postinst" <<'POSTINST'
 #!/bin/sh
 set -e
+# Drop stale bytecode from a previous version before compiling the new files.
+find /usr/lib/python3/dist-packages/dustbuster -name "__pycache__" -type d -prune -exec rm -rf {} + 2>/dev/null || true
 python3 -m compileall -q /usr/lib/python3/dist-packages/dustbuster >/dev/null 2>&1 || true
 if command -v gtk-update-icon-cache >/dev/null 2>&1; then gtk-update-icon-cache -q -t /usr/share/icons/hicolor || true; fi
 if command -v update-desktop-database >/dev/null 2>&1; then update-desktop-database -q || true; fi
@@ -62,7 +64,11 @@ POSTINST
 cat > "$STAGE/DEBIAN/postrm" <<'POSTRM'
 #!/bin/sh
 set -e
-rm -rf /usr/lib/python3/dist-packages/dustbuster 2>/dev/null || true
+# Only on removal: dpkg also runs the OLD package's postrm during an upgrade, after the new files
+# are in place, and deleting the folder then would destroy the update.
+case "$1" in
+    remove|purge) rm -rf /usr/lib/python3/dist-packages/dustbuster 2>/dev/null || true ;;
+esac
 if command -v gtk-update-icon-cache >/dev/null 2>&1; then gtk-update-icon-cache -q -t /usr/share/icons/hicolor || true; fi
 exit 0
 POSTRM
