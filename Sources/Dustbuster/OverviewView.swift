@@ -5,16 +5,24 @@ struct OverviewView: View {
     @Binding var selection: SidebarSelection?
 
     @State private var disk = DiskUsage.current()
+    @State private var showSmartClean = false
 
-    private var safeCategories: [CleanCategory] { sorted(store.categories.filter { $0.safety == .safe }) }
-    private var cautionCategories: [CleanCategory] { sorted(store.categories.filter { $0.safety == .caution }) }
+    private var cleanup: [CleanCategory] { store.categories(in: .cleanup) }
+    private var aiCategories: [CleanCategory] { sorted(store.categories(in: .ai)) }
+    private var privacyCategories: [CleanCategory] { sorted(store.categories(in: .privacy)) }
+    private var safeCategories: [CleanCategory] { sorted(cleanup.filter { $0.safety == .safe }) }
+    private var cautionCategories: [CleanCategory] { sorted(cleanup.filter { $0.safety == .caution }) }
 
     private var safeTotal: Int64 {
-        safeCategories.reduce(0) { $0 + store.sizeFor($1) }
+        store.categories.filter { $0.safety == .safe }.reduce(0) { $0 + store.sizeFor($1) }
     }
 
     private var cautionTotal: Int64 {
-        cautionCategories.reduce(0) { $0 + store.sizeFor($1) }
+        store.categories.filter { $0.safety == .caution }.reduce(0) { $0 + store.sizeFor($1) }
+    }
+
+    private var aiTotal: Int64 {
+        aiCategories.reduce(0) { $0 + store.sizeFor($1) }
     }
 
     private var isScanning: Bool { !store.scanningCategoryIDs.isEmpty }
@@ -26,6 +34,9 @@ struct OverviewView: View {
             VStack(alignment: .leading, spacing: 28) {
                 hero
 
+                aiBanner
+                section("Creati dall'AI", subtitle: "Temporanei e backup di Claude Code e Codex", categories: aiCategories)
+                section("Privacy", subtitle: "Cronologia, cookie e allegati: chiudi prima i browser", categories: privacyCategories)
                 section("Sicuri da eliminare", subtitle: "Vengono rigenerati automaticamente", categories: safeCategories)
                 section("Da valutare", subtitle: "Controlla il contenuto prima di eliminare", categories: cautionCategories)
 
@@ -33,17 +44,38 @@ struct OverviewView: View {
                     sectionTitle("Strumenti", subtitle: "Analisi su richiesta")
                     LazyVGrid(columns: columns, spacing: 14) {
                         toolCard(
+                            title: "Mappa dello spazio",
+                            detail: "Vedi a blocchi cosa occupa più spazio ed entra nelle cartelle",
+                            symbol: "square.grid.3x3.fill",
+                            tint: Theme.indigo,
+                            target: .diskMap
+                        )
+                        toolCard(
+                            title: "App e resti",
+                            detail: "Disinstalla un'app con i suoi file e trova i resti di quelle rimosse",
+                            symbol: "app.badge.checkmark",
+                            tint: Theme.plum,
+                            target: .apps
+                        )
+                        toolCard(
+                            title: "File grandi e vecchi",
+                            detail: "I file pesanti che non apri da mesi, fuori dai tuoi progetti git",
+                            symbol: "externaldrive.badge.clock",
+                            tint: Theme.orchid,
+                            target: .largeFiles
+                        )
+                        toolCard(
                             title: "File duplicati",
                             detail: "Trova copie identiche in Download, Scrivania e Documenti",
                             symbol: "doc.on.doc",
-                            tint: .teal,
+                            tint: Theme.plum,
                             target: .duplicates
                         )
                         toolCard(
                             title: "Docker",
                             detail: "Spazio occupato da immagini, container e volumi",
                             symbol: "cube.box",
-                            tint: .blue,
+                            tint: Theme.slate,
                             target: .docker
                         )
                     }
@@ -52,6 +84,16 @@ struct OverviewView: View {
             .padding(28)
         }
         .navigationTitle("Panoramica")
+        .alert("Pulizia intelligente", isPresented: $showSmartClean) {
+            Button("Sposta nel Cestino", role: .destructive) {
+                store.smartClean()
+                disk = DiskUsage.current()
+            }
+            Button("Annulla", role: .cancel) {}
+        } message: {
+            let items = store.smartCleanItems()
+            Text("Sposto nel Cestino \(items.count) elementi sicuri (circa \(formatBytes(DiskScanner.totalSize(of: items)))): cache, log, temporanei. Restano fuori tutto ciò che è da valutare, modificato di recente o dentro un repository git. Potrai recuperarli dal Cestino.")
+        }
         .toolbar {
             ToolbarItem {
                 Button {
@@ -80,7 +122,7 @@ struct OverviewView: View {
                 Text(formatBytes(safeTotal))
                     .font(.system(size: 48, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.accent)
                     .animation(.default, value: safeTotal)
                 Text("+ \(formatBytes(cautionTotal)) da valutare caso per caso")
                     .font(.callout)
@@ -95,8 +137,17 @@ struct OverviewView: View {
                         Label("Inizia dal più grande", systemImage: "arrow.right.circle.fill")
                     }
                     .prominentButton()
-                    .tint(.white.opacity(0.25))
+                    .tint(Theme.accent)
+                    .foregroundStyle(Theme.ink)
                     .disabled(safeTotal == 0)
+
+                    Button {
+                        showSmartClean = true
+                    } label: {
+                        Label("Pulizia intelligente", systemImage: "wand.and.stars")
+                    }
+                    .secondaryButton()
+                    .disabled(isScanning || store.smartCleanItems().isEmpty)
 
                     if isScanning {
                         ProgressView()
@@ -111,15 +162,15 @@ struct OverviewView: View {
         .padding(28)
         .background(
             ZStack {
-                Theme.brandGradient
+                Theme.heroGradient
                 Image(systemName: "sparkles")
                     .font(.system(size: 160))
-                    .foregroundStyle(.white.opacity(0.07))
+                    .foregroundStyle(Theme.accent.opacity(0.08))
                     .offset(x: 220, y: -30)
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: Theme.teal.opacity(0.3), radius: 16, y: 8)
+        .shadow(color: Theme.ink.opacity(0.35), radius: 16, y: 8)
     }
 
     // MARK: - Sections
@@ -144,6 +195,29 @@ struct OverviewView: View {
                 cleanRow(clean)
             }
         }
+    }
+
+    private var aiBanner: some View {
+        HStack(spacing: 16) {
+            IconTile(symbol: "sparkles", tint: Theme.ink, size: 52)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Liberati dai file dell'AI")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                Text("Temporanei, copie prima delle modifiche e backup lasciati da Claude Code e Codex. I tuoi progetti git non vengono mai toccati.")
+                    .font(.caption)
+                    .foregroundStyle(Color.white.opacity(0.88))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 12)
+            Text(formatBytes(aiTotal))
+                .font(.system(.title, design: .rounded).weight(.bold))
+                .monospacedDigit()
+                .foregroundStyle(.white)
+        }
+        .padding(18)
+        .background(Theme.aiGradient, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: Theme.accent.opacity(0.3), radius: 12, y: 6)
     }
 
     private func cleanRow(_ categories: [CleanCategory]) -> some View {
@@ -218,7 +292,7 @@ private struct DiskRing: View {
                 .stroke(.white.opacity(0.2), lineWidth: 14)
             Circle()
                 .trim(from: 0, to: usage?.usedFraction ?? 0)
-                .stroke(.white, style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                .stroke(Theme.accent, style: StrokeStyle(lineWidth: 14, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             VStack(spacing: 2) {
                 if let usage {

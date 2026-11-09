@@ -3,6 +3,10 @@ import SwiftUI
 enum SidebarSelection: Hashable {
     case overview
     case category(String)
+    case diskMap
+    case apps
+    case largeFiles
+    case startup
     case duplicates
     case docker
 }
@@ -13,44 +17,71 @@ func formatBytes(_ bytes: Int64) -> String {
 
 struct ContentView: View {
     @StateObject private var store = CleanupStore()
-    @State private var selection: SidebarSelection? = .overview
+    @State private var selection: SidebarSelection? = ContentView.launchSelection()
+
+    /// `-section diskMap|apps|largeFiles|duplicates` opens that page at launch (used for checking screenshots).
+    private static func launchSelection() -> SidebarSelection {
+        switch UserDefaults.standard.string(forKey: "section") {
+        case "diskMap": return .diskMap
+        case "apps": return .apps
+        case "largeFiles": return .largeFiles
+        case "startup": return .startup
+        case "duplicates": return .duplicates
+        default: return .overview
+        }
+    }
 
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
-                sidebarRow("Panoramica", symbol: "gauge.with.dots.needle.67percent", tint: Theme.teal)
+                sidebarRow("Panoramica", symbol: "gauge.with.dots.needle.67percent", tint: Theme.tint)
                     .tag(SidebarSelection.overview)
 
-                Section("Cache e temporanei") {
-                    ForEach(store.categories) { category in
-                        sidebarRow(category.title, symbol: category.symbol, tint: category.tint) {
-                            if store.scanningCategoryIDs.contains(category.id) {
-                                ProgressView().controlSize(.mini)
-                            } else {
-                                Text(formatBytes(store.sizeFor(category)))
-                                    .font(.caption.monospacedDigit())
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .tag(SidebarSelection.category(category.id))
-                    }
-                }
+                categorySection("Cache e temporanei", group: .cleanup)
+                categorySection("Creati dall'AI", group: .ai)
+                categorySection("Privacy", group: .privacy)
 
                 Section("Strumenti") {
-                    sidebarRow("File duplicati", symbol: "doc.on.doc", tint: .teal)
+                    sidebarRow("Mappa dello spazio", symbol: "square.grid.3x3.fill", tint: Theme.indigo)
+                        .tag(SidebarSelection.diskMap)
+                    sidebarRow("App e resti", symbol: "app.badge.checkmark", tint: Theme.plum)
+                        .tag(SidebarSelection.apps)
+                    sidebarRow("File grandi e vecchi", symbol: "externaldrive.badge.clock", tint: Theme.orchid)
+                        .tag(SidebarSelection.largeFiles)
+                    sidebarRow("Elementi di avvio", symbol: "power", tint: Theme.mauve)
+                        .tag(SidebarSelection.startup)
+                    sidebarRow("File duplicati", symbol: "doc.on.doc", tint: Theme.plum)
                         .tag(SidebarSelection.duplicates)
-                    sidebarRow("Docker", symbol: "cube.box", tint: .blue)
+                    sidebarRow("Docker", symbol: "cube.box", tint: Theme.slate)
                         .tag(SidebarSelection.docker)
                 }
             }
-            .navigationSplitViewColumnWidth(min: 240, ideal: 280)
+            .navigationSplitViewColumnWidth(min: 260, ideal: 300)
         } detail: {
             detailView
                 .frame(minWidth: 560, minHeight: 480)
         }
+        .tint(Theme.tint)
         .onAppear {
             store.scanAll()
             store.refreshDockerInfo()
+        }
+    }
+
+    private func categorySection(_ title: String, group: CategoryGroup) -> some View {
+        Section(title) {
+            ForEach(store.categories(in: group)) { category in
+                sidebarRow(category.title, symbol: category.symbol, tint: category.tint) {
+                    if store.scanningCategoryIDs.contains(category.id) {
+                        ProgressView().controlSize(.mini)
+                    } else {
+                        Text(formatBytes(store.sizeFor(category)))
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .tag(SidebarSelection.category(category.id))
+            }
         }
     }
 
@@ -83,6 +114,14 @@ struct ContentView: View {
             if let category = store.categories.first(where: { $0.id == id }) {
                 CategoryDetailView(store: store, category: category)
             }
+        case .diskMap:
+            DiskMapView()
+        case .apps:
+            AppsView()
+        case .largeFiles:
+            LargeFilesView()
+        case .startup:
+            StartupView()
         case .duplicates:
             DuplicatesView(store: store)
         case .docker:

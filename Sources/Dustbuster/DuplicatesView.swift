@@ -14,7 +14,7 @@ struct DuplicatesView: View {
             VStack(alignment: .leading, spacing: 20) {
                 PageHeader(
                     symbol: "doc.on.doc",
-                    tint: .teal,
+                    tint: Theme.plum,
                     title: "File duplicati",
                     subtitle: "Cerca file con contenuto identico nelle cartelle scelte. In ogni gruppo la copia più vecchia resta deselezionata e non viene mai toccata."
                 ) {
@@ -63,7 +63,7 @@ struct DuplicatesView: View {
                     ForEach(store.duplicateFolders, id: \.self) { folder in
                         HStack(spacing: 6) {
                             Image(systemName: "folder.fill")
-                                .foregroundStyle(Theme.teal)
+                                .foregroundStyle(Theme.tint)
                             Text(folder.lastPathComponent)
                             Button {
                                 store.removeDuplicateFolder(folder)
@@ -108,7 +108,7 @@ struct DuplicatesView: View {
                         Label("Avvia scansione", systemImage: "magnifyingglass")
                     }
                     .prominentButton()
-                    .tint(Theme.teal)
+                    .tint(Theme.tint)
                     .controlSize(.large)
                     .disabled(store.duplicateFolders.isEmpty || store.isScanningDuplicates)
                 }
@@ -147,7 +147,7 @@ struct DuplicatesView: View {
                     Spacer()
                     Text("recuperabili \(formatBytes(group.wastedBytes))")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(Theme.teal)
+                        .foregroundStyle(Theme.tint)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
@@ -184,7 +184,7 @@ struct DuplicatesView: View {
                     .padding(.vertical, 6)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(isSelected ? Theme.teal.opacity(0.08) : .clear)
+                            .fill(isSelected ? Theme.tint.opacity(0.08) : .clear)
                     )
                     .contentShape(Rectangle())
                     .onTapGesture { store.toggleDuplicateSelection(file.id) }

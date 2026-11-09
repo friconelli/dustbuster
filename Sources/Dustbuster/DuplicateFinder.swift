@@ -25,6 +25,8 @@ enum DuplicateFinder {
         var bySize: [Int64: [URL]] = [:]
 
         for folder in folders {
+            // A folder chosen from inside a repository is skipped as a whole.
+            if GitGuard.isInsideRepo(folder) { continue }
             guard let enumerator = fm.enumerator(
                 at: folder,
                 includingPropertiesForKeys: [.fileSizeKey, .isDirectoryKey, .isSymbolicLinkKey],
@@ -32,11 +34,16 @@ enum DuplicateFinder {
             ) else { continue }
 
             for case let url as URL in enumerator {
-                guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey, .isSymbolicLinkKey]),
-                      values.isDirectory != true,
-                      values.isSymbolicLink != true,
-                      let size = values.fileSize, size > 4096
+                guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey, .isSymbolicLinkKey])
                 else { continue }
+                if values.isDirectory == true {
+                    // Project files (repositories, dependencies, build output) are never candidates.
+                    if GitGuard.projectFolderNames.contains(url.lastPathComponent) || GitGuard.isRepoRoot(url) {
+                        enumerator.skipDescendants()
+                    }
+                    continue
+                }
+                guard values.isSymbolicLink != true, let size = values.fileSize, size > 4096 else { continue }
                 bySize[Int64(size), default: []].append(url)
             }
         }

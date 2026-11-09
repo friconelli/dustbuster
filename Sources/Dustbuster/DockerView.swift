@@ -26,7 +26,7 @@ struct DockerView: View {
             VStack(alignment: .leading, spacing: 20) {
                 PageHeader(
                     symbol: "cube.box",
-                    tint: .blue,
+                    tint: Theme.slate,
                     title: "Docker",
                     subtitle: "Immagini, container e volumi possono contenere dati di applicazioni o database che Dustbuster non può valutare in sicurezza. Qui vedi lo spazio occupato e decidi tu da terminale."
                 ) {
@@ -77,7 +77,7 @@ struct DockerView: View {
         Card {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    IconTile(symbol: symbol(for: row[0]), tint: .blue, size: 32)
+                    IconTile(symbol: symbol(for: row[0]), tint: Theme.slate, size: 32)
                     Text(row[0])
                         .font(.headline)
                     Spacer()

@@ -15,6 +15,25 @@ final class CleanupStore: ObservableObject {
 
     @Published var dockerOutput: String?
 
+    func categories(in group: CategoryGroup) -> [CleanCategory] {
+        categories.filter { $0.group == group }
+    }
+
+    // MARK: - Smart clean
+
+    /// Everything that is safe to remove in one go: "Sicuro" categories only, nothing recent, nothing in a repository.
+    func smartCleanItems() -> [CategoryItem] {
+        var seen = Set<String>()
+        return categories.filter { $0.safety == .safe }
+            .flatMap { items[$0.id] ?? [] }
+            .filter { !$0.isRecent && !$0.containsRepo && !GitGuard.isInsideRepo($0.url) && seen.insert($0.id).inserted }
+    }
+
+    func smartClean() {
+        DiskScanner.trash(smartCleanItems().map(\.url))
+        scanAll()
+    }
+
     func sizeFor(_ category: CleanCategory) -> Int64 {
         DiskScanner.totalSize(of: items[category.id] ?? [])
     }
@@ -58,7 +77,7 @@ final class CleanupStore: ObservableObject {
 
     func selectAll(categoryID: String, excludingRecent: Bool) {
         let all = items[categoryID] ?? []
-        let eligible = excludingRecent ? all.filter { !$0.isRecent } : all
+        let eligible = all.filter { !$0.containsRepo && !(excludingRecent && $0.isRecent) }
         selectedItemIDs[categoryID] = Set(eligible.map(\.id))
     }
 
@@ -70,6 +89,7 @@ final class CleanupStore: ObservableObject {
         let selected = selectedItemIDs[categoryID] ?? []
         guard !selected.isEmpty else { return }
         let urls = (items[categoryID] ?? []).filter { selected.contains($0.id) }.map(\.url)
+            .filter { !GitGuard.isInsideRepo($0) }
         DiskScanner.trash(urls)
         if let category = categories.first(where: { $0.id == categoryID }) {
             scan(category)
@@ -148,6 +168,7 @@ final class CleanupStore: ObservableObject {
         let urls = duplicateGroups.flatMap(\.files)
             .filter { duplicateSelection.contains($0.id) }
             .map(\.url)
+            .filter { !GitGuard.isInsideRepo($0) }
         DiskScanner.trash(urls)
         scanDuplicates()
     }

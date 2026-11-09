@@ -165,6 +165,15 @@ private struct ItemRow: View {
                     Text(item.displayName)
                         .lineLimit(1)
                         .truncationMode(.middle)
+                    if item.containsRepo {
+                        Text("repository git")
+                            .font(.caption2.weight(.semibold))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 1)
+                            .background(Color.red.opacity(0.15), in: Capsule())
+                            .foregroundStyle(.red)
+                            .help("Contiene un repository git: non viene mai preselezionato")
+                    }
                     if item.isRecent {
                         Text("in uso?")
                             .font(.caption2.weight(.semibold))

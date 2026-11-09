@@ -1,13 +1,36 @@
 import SwiftUI
 
 enum Theme {
-    static let mint = Color(red: 0.10, green: 0.75, blue: 0.55)
-    static let teal = Color(red: 0.02, green: 0.45, blue: 0.55)
+    // Palette taken from the app icon: deep indigo background, hot magenta accent, white.
+    static let accent = Color(red: 0.996, green: 0.341, blue: 0.651)
+    /// Magenta dark enough to read as text and controls on a light background.
+    static let accentDeep = Color(red: 0.76, green: 0.09, blue: 0.37)
+    static let ink = Color(red: 0.141, green: 0.075, blue: 0.345)
+    static let night = Color(red: 0.20, green: 0.15, blue: 0.42)
+    /// Accent for controls and checkmarks.
+    static let tint = accentDeep
     static let brandGradient = LinearGradient(
-        colors: [mint, teal],
+        colors: [accent, Color(red: 0.62, green: 0.25, blue: 0.80)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+    static let heroGradient = LinearGradient(
+        colors: [Color(red: 0.22, green: 0.13, blue: 0.50), ink],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    static let aiGradient = LinearGradient(
+        colors: [accent, Color(red: 0.56, green: 0.27, blue: 0.86)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    // Tile colors: magentas, violets and indigos, so nothing clashes with the icon.
+    static let plum = Color(red: 0.55, green: 0.20, blue: 0.60)
+    static let indigo = Color(red: 0.27, green: 0.25, blue: 0.72)
+    static let orchid = Color(red: 0.80, green: 0.30, blue: 0.70)
+    static let slate = Color(red: 0.36, green: 0.38, blue: 0.52)
+    static let mauve = Color(red: 0.50, green: 0.40, blue: 0.72)
     static let cardBackground = Color(nsColor: .controlBackgroundColor)
     static let cardRadius: CGFloat = 16
 }
@@ -36,6 +59,14 @@ extension CleanCategory {
         case "caches": return "internaldrive"
         case "logs": return "doc.text"
         case "claude-scratch": return "sparkles"
+        case "claude-edit-backups": return "clock.arrow.circlepath"
+        case "claude-temp": return "wind"
+        case "codex-temp": return "terminal"
+        case "codex-images": return "photo.on.rectangle"
+        case "ai-backup-files": return "doc.badge.clock"
+        case "browser-history": return "clock"
+        case "browser-cookies": return "lock.shield"
+        case "mail-downloads": return "envelope"
         case "xcode-derived": return "hammer"
         case "xcode-archives": return "archivebox"
         case "sim-caches": return "iphone"
@@ -49,17 +80,24 @@ extension CleanCategory {
 
     var tint: Color {
         switch id {
-        case "caches": return .blue
-        case "logs": return .gray
-        case "claude-scratch": return .orange
-        case "xcode-derived", "xcode-archives": return .indigo
-        case "sim-caches", "sim-devices": return .purple
-        case "npm": return .red
-        case "yarn": return .cyan
-        case "pnpm": return .yellow
-        case "homebrew": return .brown
-        case "cocoapods": return .pink
-        default: return Theme.teal
+        case "caches": return Theme.accentDeep
+        case "logs": return Theme.slate
+        case "claude-scratch": return Theme.orchid
+        case "claude-edit-backups": return Theme.plum
+        case "claude-temp": return Theme.mauve
+        case "codex-temp": return Theme.indigo
+        case "codex-images": return Theme.night
+        case "ai-backup-files": return Theme.slate
+        case "browser-history", "browser-cookies": return Theme.indigo
+        case "mail-downloads": return Theme.mauve
+        case "xcode-derived", "xcode-archives": return Theme.night
+        case "sim-caches", "sim-devices": return Theme.indigo
+        case "npm": return Theme.plum
+        case "yarn": return Theme.orchid
+        case "pnpm": return Theme.mauve
+        case "homebrew": return Theme.slate
+        case "cocoapods": return Theme.accentDeep
+        default: return Theme.tint
         }
     }
 }
