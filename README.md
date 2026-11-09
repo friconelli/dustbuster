@@ -44,6 +44,12 @@ App macOS (SwiftUI) per liberare spazio su disco: analizza cache e file temporan
 
 Le funzioni sono scritte da zero sulla base del comportamento documentato di strumenti simili; nessun codice di app commerciali è stato analizzato o copiato.
 
+## Aggiornamenti
+
+L'app controlla da sola le nuove versioni su GitHub (all'avvio, al massimo ogni 6 ore) e dal menu **Dustbuster › Controlla aggiornamenti…**. Quando ne trova una compare in fondo alla barra laterale il pulsante **Aggiorna e riavvia**: scarica `Dustbuster.zip` dalla release, verifica che sia la stessa app (stesso bundle id e versione attesa), sostituisce la copia in uso, porta la vecchia nel Cestino e si riapre.
+
+Per pubblicare una versione: `Scripts/release.sh 1.1.0 "Novità"` (richiede `gh` e un albero git pulito). L'allegato deve chiamarsi `Dustbuster.zip`.
+
 ## Build e installazione
 
 ```bash

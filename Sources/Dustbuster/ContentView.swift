@@ -56,6 +56,7 @@ struct ContentView: View {
                         .tag(SidebarSelection.docker)
                 }
             }
+            .safeAreaInset(edge: .bottom) { UpdateFooter() }
             .navigationSplitViewColumnWidth(min: 260, ideal: 300)
         } detail: {
             detailView
@@ -65,6 +66,7 @@ struct ContentView: View {
         .onAppear {
             store.scanAll()
             store.refreshDockerInfo()
+            Updater.shared.checkIfDue()
         }
     }
 
